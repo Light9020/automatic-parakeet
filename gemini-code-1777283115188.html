@@ -1,0 +1,119 @@
+<div class="ticker-item">NABTEB TOKEN</div>
+    <div class="ticker-item">NIN TO BVN LINKING</div>
+    <div class="ticker-item">JAMB RESULT SLIP</div>
+  </div>
+</div>
+
+<section id="svc-section" class="section">
+  <div class="sec-eyebrow">Services</div>
+  <h2 class="sec-h2">What do you need <em>today?</em></h2>
+  <p class="sec-p">Select a service below to begin your fast-track verification or retrieval process.</p>
+  
+  <div class="cards-grid">
+     </div>
+</section>
+
+<div class="overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-stripe" id="modalStripe"></div>
+    <button class="modal-close-btn" onclick="closeModal()">×</button>
+    <div class="modal-header">
+      <h3 class="modal-title" id="mTitle">Service Name</h3>
+      <div class="price-badge pg" id="mPriceBadge">₦0.00</div>
+    </div>
+    <div class="modal-body">
+      <form id="paymentForm">
+        <div class="mfield">
+          <label>Full Name</label>
+          <input type="text" id="fullName" placeholder="John Doe" required>
+        </div>
+        <div class="mfield">
+          <label>Email Address</label>
+          <input type="email" id="email" placeholder="john@example.com" required>
+        </div>
+        <div class="mfield">
+          <label>Phone Number</label>
+          <input type="tel" id="phone" placeholder="08012345678" required>
+        </div>
+        <div class="mbtns">
+          <button type="submit" class="mbtn-sub sg">
+            <span class="lbl">Pay & Process</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://checkout.flutterwave.com/v3.js"></script>
+
+<script>
+/* ═══════════════════════════════════
+   MODAL & PAYMENT LOGIC
+═══════════════════════════════════ */
+const overlay = document.getElementById('modalOverlay');
+let currentPrice = 0;
+let currentService = "";
+
+function openManual(name, price, badgeClass, btnClass, stripeClass) {
+    document.getElementById('mTitle').innerText = name;
+    document.getElementById('mPriceBadge').innerText = price;
+    document.getElementById('mPriceBadge').className = 'price-badge ' + badgeClass;
+    document.getElementById('modalStripe').className = 'modal-stripe ' + stripeClass;
+    
+    currentService = name;
+    currentPrice = parseInt(price.replace(/[^0-9]/g, ''));
+    overlay.classList.add('open');
+}
+
+function closeModal() {
+    overlay.classList.remove('open');
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    if (event.target == overlay) closeModal();
+}
+
+/* ═══════════════════════════════════
+   FLUTTERWAVE INTEGRATION
+═══════════════════════════════════ */
+document.getElementById('paymentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+    const name = document.getElementById('fullName').value;
+
+    FlutterwaveCheckout({
+      public_key: "FLWPUBK-c42d5a8cbcbaa5613e1ee626b0a0accc-X",
+      tx_ref: "MV-" + Date.now(),
+      amount: currentPrice,
+      currency: "NGN",
+      payment_options: "card, banktransfer, ussd",
+      customer: {
+        email: email,
+        phone_number: phone,
+        name: name,
+      },
+      customizations: {
+        title: "Meldverify",
+        description: "Payment for " + currentService,
+        logo: "https://your-logo-url.com/logo.png",
+      },
+      callback: function (data) {
+        // This runs after successful payment
+        console.log("Payment successful", data);
+        alert("Payment Successful! We will process your " + currentService + " shortly.");
+        closeModal();
+        // Here you would typically send data to your backend/WhatsApp
+      },
+      onclose: function() {
+        console.log("Payment window closed");
+      }
+    });
+});
+</script>
+
+</body>
+</html>
